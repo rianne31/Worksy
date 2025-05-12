@@ -1,0 +1,1046 @@
+{% extends 'base.html' %}
+
+{% block title %}Employer Dashboard | Worksy{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<!-- Toast container for notifications -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toast-container"></div>
+
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-tachometer-alt me-2"></i>Employer Dashboard</h2>
+            <p class="lead">Manage your job postings and applications</p>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">Active Jobs</h5>
+                            <p class="mb-0 fs-4">{{ active_jobs_count }}</p>
+                        </div>
+                        <i class="fas fa-briefcase fa-3x opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a href="{% url 'jobs:my_jobs' %}" class="text-white text-decoration-none">View Details</a>
+                    <i class="fas fa-angle-right text-white"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">Total Applications</h5>
+                            <p class="mb-0 fs-4">{{ applications.count }}</p>
+                        </div>
+                        <i class="fas fa-file-alt fa-3x opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a href="#applications" class="text-white text-decoration-none">View Details</a>
+                    <i class="fas fa-angle-right text-white"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">Pending Review</h5>
+                            <p class="mb-0 fs-4">{{ pending_applications_count }}</p>
+                        </div>
+                        <i class="fas fa-clock fa-3x opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a href="#applications" class="text-dark text-decoration-none">View Details</a>
+                    <i class="fas fa-angle-right text-dark"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">Upcoming Interviews</h5>
+                            <p class="mb-0 fs-4">{{ interviews.count }}</p>
+                        </div>
+                        <i class="fas fa-calendar-check fa-3x opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a href="#interviews" class="text-white text-decoration-none">View Details</a>
+                    <i class="fas fa-angle-right text-white"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-briefcase me-2"></i>Your Job Postings</h5>
+                    <a href="{% url 'jobs:post_job' %}" class="btn btn-light btn-sm">
+                        <i class="fas fa-plus me-1"></i>Post New Job
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if jobs %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Location</th>
+                                    <th>Applications</th>
+                                    <th>Posted Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in jobs %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'jobs:job_detail' job.id %}">{{ job.title }}</a>
+                                    </td>
+                                    <td>{{ job.category.name|default:"Uncategorized" }}</td>
+                                    <td>{{ job.location }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ job.applications.count }}</span>
+                                    </td>
+                                    <td>{{ job.posted_date|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% if job.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{% url 'jobs:job_detail' job.id %}" class="btn btn-sm btn-outline-primary" title="View">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'jobs:edit_job' job.id %}" class="btn btn-sm btn-outline-secondary" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger delete-job-btn" title="Delete" data-job-id="{{ job.id }}" data-job-title="{{ job.title }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-info view-applications-btn" title="View Applications" data-job-id="{{ job.id }}" data-bs-toggle="modal" data-bs-target="#viewApplicationsModal">
+                                                <i class="fas fa-users"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-briefcase fa-4x text-muted mb-3"></i>
+                        <h5>No Jobs Posted</h5>
+                        <p class="text-muted">You haven't posted any jobs yet.</p>
+                        <a href="{% url 'jobs:post_job' %}" class="btn btn-primary mt-2">
+                            <i class="fas fa-plus me-1"></i>Post a Job
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4" id="applications">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Recent Applications</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_applications %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Applicant</th>
+                                    <th>Job</th>
+                                    <th>Applied Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in recent_applications %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'users:public_profile' application.applicant.username %}">
+                                            {{ application.applicant.get_full_name|default:application.applicant.username }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'jobs:job_detail' application.job.id %}">{{ application.job.title }}</a>
+                                    </td>
+                                    <td>{{ application.applied_date|date:"M d, Y" }}</td>
+                                    <td>
+                                        <select class="form-select form-select-sm application-status" data-application-id="{{ application.id }}">
+                                            <option value="PENDING" {% if application.status == 'PENDING' %}selected{% endif %}>Pending</option>
+                                            <option value="REVIEWING" {% if application.status == 'REVIEWING' %}selected{% endif %}>Reviewing</option>
+                                            <option value="SHORTLISTED" {% if application.status == 'SHORTLISTED' %}selected{% endif %}>Shortlisted</option>
+                                            <option value="REJECTED" {% if application.status == 'REJECTED' %}selected{% endif %}>Rejected</option>
+                                            <option value="ACCEPTED" {% if application.status == 'ACCEPTED' %}selected{% endif %}>Accepted</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{{ application.resume.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                                <i class="fas fa-file-alt"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#scheduleInterviewModal" data-application-id="{{ application.id }}">
+                                                <i class="fas fa-calendar-plus"></i>
+                                            </button>
+                                            <a href="{% url 'users:start_conversation' application.applicant.id %}" class="btn btn-sm btn-outline-info">
+                                                <i class="fas fa-envelope"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-file-alt fa-4x text-muted mb-3"></i>
+                        <h5>No Applications</h5>
+                        <p class="text-muted">You haven't received any applications yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-end">
+                    <a href="#" class="btn btn-outline-primary btn-sm">View All Applications</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row" id="interviews">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Upcoming Interviews</h5>
+                </div>
+                <div class="card-body">
+                    {% if interviews %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Applicant</th>
+                                    <th>Job</th>
+                                    <th>Date & Time</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for interview in interviews %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'users:public_profile' interview.application.applicant.username %}">
+                                            {{ interview.application.applicant.get_full_name|default:interview.application.applicant.username }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'jobs:job_detail' interview.application.job.id %}">
+                                            {{ interview.application.job.title }}
+                                        </a>
+                                    </td>
+                                    <td>{{ interview.scheduled_date|date:"M d, Y h:i A" }}</td>
+                                    <td>
+                                        {% if interview.is_virtual %}
+                                        <span class="badge bg-info">Virtual</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">In-person</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if interview.status == 'SCHEDULED' %}primary{% elif interview.status == 'COMPLETED' %}success{% elif interview.status == 'CANCELLED' %}danger{% else %}warning{% endif %}">
+                                            {{ interview.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#interviewDetailsModal"
+                                                    data-interview-id="{{ interview.id }}"
+                                                    title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            {% if interview.is_virtual and interview.meeting_link %}
+                                            <a href="{{ interview.meeting_link }}" class="btn btn-sm btn-outline-info" target="_blank" title="Join Meeting">
+                                                <i class="fas fa-video"></i>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-calendar-check fa-4x text-muted mb-3"></i>
+                        <h5>No Upcoming Interviews</h5>
+                        <p class="text-muted">You haven't scheduled any interviews yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Schedule Interview Modal -->
+<div class="modal fade" id="scheduleInterviewModal" tabindex="-1" aria-labelledby="scheduleInterviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="scheduleInterviewModalLabel">Schedule Interview</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="scheduleInterviewForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="application_id" name="application_id">
+                    <div class="mb-3">
+                        <label for="scheduled_date" class="form-label">Date & Time</label>
+                        <input type="datetime-local" class="form-control" id="scheduled_date" name="scheduled_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="duration_minutes" class="form-label">Duration (minutes)</label>
+                        <input type="number" class="form-control" id="duration_minutes" name="duration_minutes" value="30" min="15" step="15" required>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_virtual" name="is_virtual" checked>
+                            <label class="form-check-label" for="is_virtual">
+                                Virtual Interview
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3" id="meeting_link_group">
+                        <label for="meeting_link" class="form-label">Meeting Link</label>
+                        <input type="url" class="form-control" id="meeting_link" name="meeting_link" placeholder="https://meet.google.com/...">
+                    </div>
+                    <div class="mb-3" id="location_group" style="display: none;">
+                        <label for="location" class="form-label">Location</label>
+                        <input type="text" class="form-control" id="location" name="location" placeholder="Office Address or Room Number">
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Additional information for the candidate"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="scheduleInterviewBtn">Schedule Interview</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reschedule Interview Modal -->
+<div class="modal fade" id="rescheduleInterviewModal" tabindex="-1" aria-labelledby="rescheduleInterviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="rescheduleInterviewModalLabel">Reschedule Interview</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="rescheduleInterviewForm">
+                    <input type="hidden" id="interview_id" name="interview_id">
+                    <div class="mb-3">
+                        <label for="new_scheduled_date" class="form-label">New Date & Time</label>
+                        <input type="datetime-local" class="form-control" id="new_scheduled_date" name="new_scheduled_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reschedule_reason" class="form-label">Reason for Rescheduling</label>
+                        <textarea class="form-control" id="reschedule_reason" name="reschedule_reason" rows="3" placeholder="Explain why the interview needs to be rescheduled"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="rescheduleInterviewBtn">Reschedule</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interview Details Modal -->
+<div class="modal fade" id="interviewDetailsModal" tabindex="-1" aria-labelledby="interviewDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="interviewDetailsModalLabel">Interview Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="interview-details-content">
+                Loading...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-warning" id="rescheduleBtn">Reschedule</button>
+                <button type="button" class="btn btn-danger" id="cancelInterviewBtn">Cancel Interview</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Applications Modal -->
+<div class="modal fade" id="viewApplicationsModal" tabindex="-1" aria-labelledby="viewApplicationsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewApplicationsModalLabel">Applications</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="applications-content">
+                Loading...
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Job Confirmation Modal -->
+<div class="modal fade" id="deleteJobModal" tabindex="-1" aria-labelledby="deleteJobModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteJobModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this job posting? This action cannot be undone.</p>
+                <p class="text-danger"><strong>Job Title:</strong> <span id="delete-job-title"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function handleStatusChange(select) {
+        const applicationId = select.dataset.applicationId;
+        const newStatus = select.value;
+        const previousValue = select.dataset.previousValue;
+        
+        // Show loading state
+        const originalText = select.options[select.selectedIndex].text;
+        select.options[select.selectedIndex].text = 'Updating...';
+        select.disabled = true;
+
+        // Make AJAX request to update the status
+        const formData = new FormData();
+        formData.append('application_id', applicationId);
+        formData.append('status', newStatus);
+        
+        fetch('{% url "jobs:update_application_status" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to update status');
+            }
+            // Update the previous value on success
+            select.dataset.previousValue = newStatus;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Revert to previous value on error
+            select.value = previousValue;
+            alert('Failed to update status: ' + error.message);
+        })
+        .finally(() => {
+            // Reset the select state
+            select.options[select.selectedIndex].text = originalText;
+            select.disabled = false;
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle location/meeting link based on interview type
+        const isVirtualCheckbox = document.getElementById('is_virtual');
+        const meetingLinkGroup = document.getElementById('meeting_link_group');
+        const locationGroup = document.getElementById('location_group');
+        
+        if (isVirtualCheckbox) {
+            isVirtualCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    meetingLinkGroup.style.display = 'block';
+                    locationGroup.style.display = 'none';
+                } else {
+                    meetingLinkGroup.style.display = 'none';
+                    locationGroup.style.display = 'block';
+                }
+            });
+        }
+        
+        // Handle application status change
+        const statusSelects = document.querySelectorAll('.application-status');
+        statusSelects.forEach(select => {
+            // Store the initial value
+            select.dataset.previousValue = select.value;
+            
+            select.addEventListener('change', function() {
+                const applicationId = this.dataset.applicationId;
+                const newStatus = this.value;
+                
+                // Show loading state
+                const originalText = select.options[select.selectedIndex].text;
+                select.options[select.selectedIndex].text = 'Updating...';
+                select.disabled = true;
+
+                // Make AJAX request to update the status
+                const formData = new FormData();
+                formData.append('application_id', applicationId);
+                formData.append('status', newStatus);
+                
+                fetch('{% url "jobs:update_application_status" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Show success message with Bootstrap toast
+                        const toastContainer = document.getElementById('toast-container');
+                        if (toastContainer) {
+                            const toast = document.createElement('div');
+                            toast.className = 'toast align-items-center text-white bg-success border-0';
+                            toast.setAttribute('role', 'alert');
+                            toast.setAttribute('aria-live', 'assertive');
+                            toast.setAttribute('aria-atomic', 'true');
+                            toast.innerHTML = `
+                                <div class="d-flex">
+                                    <div class="toast-body">
+                                        Application status updated to ${data.status_display}
+                                    </div>
+                                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                            `;
+                            toastContainer.appendChild(toast);
+                            const bsToast = new bootstrap.Toast(toast);
+                            bsToast.show();
+                            // Remove toast after it's hidden
+                            toast.addEventListener('hidden.bs.toast', () => toast.remove());
+                        } else {
+                            // Fallback to alert if toast container doesn't exist
+                            alert(`Application status updated to ${data.status_display}`);
+                        }
+                    } else {
+                        throw new Error(data.error || 'Unknown error occurred');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Show error message with Bootstrap toast
+                    const toastContainer = document.getElementById('toast-container');
+                    if (toastContainer) {
+                        const toast = document.createElement('div');
+                        toast.className = 'toast align-items-center text-white bg-danger border-0';
+                        toast.setAttribute('role', 'alert');
+                        toast.setAttribute('aria-live', 'assertive');
+                        toast.setAttribute('aria-atomic', 'true');
+                        toast.innerHTML = `
+                            <div class="d-flex">
+                                <div class="toast-body">
+                                    Error updating application status: ${error.message}
+                                </div>
+                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                        `;
+                        toastContainer.appendChild(toast);
+                        const bsToast = new bootstrap.Toast(toast);
+                        bsToast.show();
+                        // Remove toast after it's hidden
+                        toast.addEventListener('hidden.bs.toast', () => toast.remove());
+                    } else {
+                        // Fallback to alert if toast container doesn't exist
+                        alert(`Error updating application status: ${error.message}`);
+                    }
+                    // Revert the select to its previous value
+                    select.value = select.dataset.previousValue || newStatus;
+                })
+                .finally(() => {
+                    // Reset the select state
+                    select.options[select.selectedIndex].text = originalText;
+                    select.disabled = false;
+                });
+            });
+        });
+        
+        // Handle interview details modal
+        const detailsModal = document.getElementById('interviewDetailsModal');
+        if (detailsModal) {
+            detailsModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const interviewId = button.getAttribute('data-interview-id');
+                const modalContent = document.getElementById('interview-details-content');
+                
+                // Show loading state
+                modalContent.innerHTML = 'Loading...';
+                
+                // Fetch interview details
+                fetch(`/jobs/interview/${interviewId}/`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        const interview = data.interview;
+                        modalContent.innerHTML = `
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Job Position</h6>
+                                <p>${interview.job_title}</p>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Company</h6>
+                                <p>${interview.company_name}</p>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Applicant</h6>
+                                <p>${interview.applicant_name}</p>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Date & Time</h6>
+                                <p>${interview.scheduled_date}</p>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Duration</h6>
+                                <p>${interview.duration_minutes} minutes</p>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Type</h6>
+                                <p>${interview.is_virtual ? 'Virtual' : 'In-person'}</p>
+                            </div>
+                            ${interview.is_virtual ? `
+                                <div class="mb-3">
+                                    <h6 class="fw-bold">Meeting Link</h6>
+                                    <p><a href="${interview.meeting_link}" target="_blank" class="text-primary">
+                                        <i class="fas fa-video me-1"></i>Join Meeting
+                                    </a></p>
+                                </div>
+                            ` : `
+                                <div class="mb-3">
+                                    <h6 class="fw-bold">Location</h6>
+                                    <p>${interview.location}</p>
+                                </div>
+                            `}
+                            ${interview.notes ? `
+                                <div class="mb-3">
+                                    <h6 class="fw-bold">Notes</h6>
+                                    <p>${interview.notes}</p>
+                                </div>
+                            ` : ''}
+                        `;
+                        
+                        // Update buttons with interview ID
+                        const cancelBtn = document.getElementById('cancelInterviewBtn');
+                        const rescheduleBtn = document.getElementById('rescheduleBtn');
+                        if (cancelBtn) {
+                            cancelBtn.setAttribute('data-interview-id', interview.id);
+                        }
+                        if (rescheduleBtn) {
+                            rescheduleBtn.setAttribute('data-interview-id', interview.id);
+                        }
+                    } else {
+                        modalContent.innerHTML = `<div class="alert alert-danger">Error loading interview details: ${data.error}</div>`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    modalContent.innerHTML = '<div class="alert alert-danger">Error loading interview details</div>';
+                });
+            });
+        }
+        
+        // Handle schedule interview modal
+        const scheduleInterviewModal = document.getElementById('scheduleInterviewModal');
+        if (scheduleInterviewModal) {
+            scheduleInterviewModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const applicationId = button.getAttribute('data-application-id');
+                document.getElementById('application_id').value = applicationId;
+            });
+        }
+        
+        // Handle schedule interview form submission
+        const scheduleInterviewBtn = document.getElementById('scheduleInterviewBtn');
+        if (scheduleInterviewBtn) {
+            scheduleInterviewBtn.addEventListener('click', function() {
+                const form = document.getElementById('scheduleInterviewForm');
+                const formData = new FormData(form);
+                
+                // Validate required fields
+                const scheduledDate = document.getElementById('scheduled_date').value;
+                if (!scheduledDate) {
+                    alert('Please select a date and time for the interview');
+                    return;
+                }
+                
+                // For debugging - log the form data
+                console.log('Application ID:', formData.get('application_id'));
+                console.log('Scheduled Date:', formData.get('scheduled_date'));
+                console.log('Duration:', formData.get('duration_minutes'));
+                console.log('Is Virtual:', formData.get('is_virtual'));
+                
+                // Disable the button while submitting
+                this.disabled = true;
+                
+                // Make the AJAX request to schedule the interview
+                fetch('{% url "jobs:schedule_interview" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Failed to schedule interview');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        alert('Interview scheduled successfully!');
+                        // Close modal
+                        const modal = bootstrap.Modal.getInstance(scheduleInterviewModal);
+                        modal.hide();
+                        // Reload page to show new interview
+                        window.location.reload();
+                    } else {
+                        // Show error message
+                        alert('Error scheduling interview: ' + (data.error || 'Unknown error occurred'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error scheduling interview: ' + error.message);
+                })
+                .finally(() => {
+                    // Re-enable the button
+                    this.disabled = false;
+                });
+            });
+        }
+        
+        // Handle reschedule interview modal
+        const rescheduleInterviewModal = document.getElementById('rescheduleInterviewModal');
+        if (rescheduleInterviewModal) {
+            rescheduleInterviewModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const interviewId = button.getAttribute('data-interview-id');
+                document.getElementById('interview_id').value = interviewId;
+            });
+        }
+        
+        // Handle reschedule interview form submission
+        const rescheduleInterviewBtn = document.getElementById('rescheduleInterviewBtn');
+        if (rescheduleInterviewBtn) {
+            rescheduleInterviewBtn.addEventListener('click', function() {
+                // Here you would typically make an AJAX request to reschedule the interview
+                fetch('/jobs/reschedule-interview/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({
+                        interview_id: document.getElementById('interview_id').value,
+                        new_scheduled_date: document.getElementById('new_scheduled_date').value,
+                        reschedule_reason: document.getElementById('reschedule_reason').value
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        alert('Interview rescheduled successfully!');
+                        // Close modal
+                        const modal = bootstrap.Modal.getInstance(rescheduleInterviewModal);
+                        modal.hide();
+                        // Reload page to show updated interview
+                        window.location.reload();
+                    } else {
+                        // Show error message
+                        alert('Error rescheduling interview');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error rescheduling interview');
+                });
+            });
+        }
+        
+        // Handle cancel interview
+        const cancelInterviewBtn = document.getElementById('cancelInterviewBtn');
+        if (cancelInterviewBtn) {
+            cancelInterviewBtn.addEventListener('click', function() {
+                const interviewId = this.getAttribute('data-interview-id');
+                if (confirm('Are you sure you want to cancel this interview?')) {
+                    // Here you would make an AJAX request to cancel the interview
+                    alert('Interview cancellation will be implemented soon.');
+                }
+            });
+        }
+        
+        // Handle reschedule interview
+        const rescheduleBtn = document.getElementById('rescheduleBtn');
+        if (rescheduleBtn) {
+            rescheduleBtn.addEventListener('click', function() {
+                const interviewId = this.getAttribute('data-interview-id');
+                // Here you would show the reschedule form modal
+                alert('Interview rescheduling will be implemented soon.');
+            });
+        }
+
+        // Handle delete job button clicks
+        const deleteJobBtns = document.querySelectorAll('.delete-job-btn');
+        const deleteJobModal = new bootstrap.Modal(document.getElementById('deleteJobModal'));
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        let jobToDelete = null;
+
+        deleteJobBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const jobId = this.dataset.jobId;
+                const jobTitle = this.dataset.jobTitle;
+                jobToDelete = jobId;
+                document.getElementById('delete-job-title').textContent = jobTitle;
+                deleteJobModal.show();
+            });
+        });
+
+        confirmDeleteBtn.addEventListener('click', function() {
+            if (!jobToDelete) return;
+
+            fetch(`/jobs/${jobToDelete}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    const toastContainer = document.getElementById('toast-container');
+                    if (toastContainer) {
+                        const toast = document.createElement('div');
+                        toast.className = 'toast align-items-center text-white bg-success border-0';
+                        toast.setAttribute('role', 'alert');
+                        toast.setAttribute('aria-live', 'assertive');
+                        toast.setAttribute('aria-atomic', 'true');
+                        toast.innerHTML = `
+                            <div class="d-flex">
+                                <div class="toast-body">
+                                    Job posting deleted successfully
+                                </div>
+                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                        `;
+                        toastContainer.appendChild(toast);
+                        const bsToast = new bootstrap.Toast(toast);
+                        bsToast.show();
+                        // Remove toast after it's hidden
+                        toast.addEventListener('hidden.bs.toast', () => {
+                            toast.remove();
+                            // Reload the page after toast is hidden
+                            window.location.reload();
+                        });
+                    } else {
+                        // Fallback to alert and reload
+                        alert('Job posting deleted successfully');
+                        window.location.reload();
+                    }
+                } else {
+                    throw new Error(data.error || 'Failed to delete job posting');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(`Error deleting job posting: ${error.message}`);
+            })
+            .finally(() => {
+                deleteJobModal.hide();
+                jobToDelete = null;
+            });
+        });
+
+        // Handle view applications button clicks
+        const viewApplicationsModal = document.getElementById('viewApplicationsModal');
+        if (viewApplicationsModal) {
+            viewApplicationsModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const jobId = button.getAttribute('data-job-id');
+                const modalContent = document.getElementById('applications-content');
+                
+                // Show loading state
+                modalContent.innerHTML = 'Loading...';
+                
+                // Fetch applications for this job
+                fetch(`/jobs/${jobId}/applications/`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        if (data.applications.length > 0) {
+                            modalContent.innerHTML = `
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Applicant</th>
+                                                <th>Applied Date</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${data.applications.map(app => `
+                                                <tr>
+                                                    <td>
+                                                        <a href="/users/${app.applicant_username}/">
+                                                            ${app.applicant_name}
+                                                        </a>
+                                                    </td>
+                                                    <td>${app.applied_date}</td>
+                                                    <td>
+                                                        <select class="form-select form-select-sm application-status" data-application-id="${app.id}" data-previous-value="${app.status}" onchange="handleStatusChange(this)">
+                                                            <option value="PENDING" ${app.status === 'PENDING' ? 'selected' : ''}>Pending</option>
+                                                            <option value="REVIEWING" ${app.status === 'REVIEWING' ? 'selected' : ''}>Reviewing</option>
+                                                            <option value="SHORTLISTED" ${app.status === 'SHORTLISTED' ? 'selected' : ''}>Shortlisted</option>
+                                                            <option value="REJECTED" ${app.status === 'REJECTED' ? 'selected' : ''}>Rejected</option>
+                                                            <option value="ACCEPTED" ${app.status === 'ACCEPTED' ? 'selected' : ''}>Accepted</option>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group">
+                                                            <a href="${app.resume_url}" class="btn btn-sm btn-outline-primary" target="_blank" title="View Resume">
+                                                                <i class="fas fa-file-alt"></i>
+                                                            </a>
+                                                            <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#scheduleInterviewModal" data-application-id="${app.id}" title="Schedule Interview">
+                                                                <i class="fas fa-calendar-plus"></i>
+                                                            </button>
+                                                            <a href="/messages/start/${app.applicant_username}/" class="btn btn-sm btn-outline-info" title="Message">
+                                                                <i class="fas fa-envelope"></i>
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            `;
+                            
+
+
+                            // Reinitialize application status change handlers for the new selects
+                            const newStatusSelects = modalContent.querySelectorAll('.application-status');
+                            newStatusSelects.forEach(select => {
+                                select.dataset.previousValue = select.value;
+                                select.addEventListener('change', handleStatusChange);
+                            });
+                        } else {
+                            modalContent.innerHTML = `
+                                <div class="text-center py-5">
+                                    <i class="fas fa-file-alt fa-4x text-muted mb-3"></i>
+                                    <h5>No Applications</h5>
+                                    <p class="text-muted">This job posting hasn't received any applications yet.</p>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        throw new Error(data.error || 'Failed to load applications');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    modalContent.innerHTML = `
+                        <div class="alert alert-danger">
+                            Error loading applications: ${error.message}
+                        </div>
+                    `;
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

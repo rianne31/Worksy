@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block title %}Company Profile | Worksy{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Debug Information -->
+    {% if debug %}
+    <div class="alert alert-info mb-4">
+        <h5>Debug Information:</h5>
+        <p>User: {{ user.username }}</p>
+        <p>Profile Role: {{ user.profile.role }}</p>
+        <p>Has Company: {{ user.profile.company|yesno:"Yes,No" }}</p>
+        {% if user.profile.company %}
+        <p>Company Name: {{ user.profile.company.name }}</p>
+        <p>Company Location: {{ user.profile.company.location }}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="profile-header mb-4">
+            <div class="container p-4 bg-white rounded shadow-sm">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        {% if user.profile.company.logo %}
+                            <img src="{{ user.profile.company.logo.url }}" alt="{{ user.profile.company.name }}" 
+                                class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                        {% else %}
+                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center"
+                                style="width: 100px; height: 100px;">
+                                <i class="fas fa-building fa-3x text-primary"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col">
+                        <h2 class="mb-1 text-dark">{{ user.profile.company.name|default:"Company Name Not Set" }}</h2>
+                        <p class="mb-2">
+                            <i class="fas fa-map-marker-alt me-2"></i>
+                            {% if user.profile.company.location %}
+                                {{ user.profile.company.location }}
+                            {% else %}
+                                Location not specified
+                            {% endif %}
+                        </p>
+                        <div class="mt-2">
+                            <a href="{% url 'users:edit_profile' %}" class="btn btn-primary">
+                                <i class="fas fa-edit me-2"></i>Edit Company Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- About Company -->
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>About Us</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.profile.company.about %}
+                    <p class="mb-0">{{ user.profile.company.about|linebreaks }}</p>
+                    {% else %}
+                    <p class="text-muted mb-0">No company description provided.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <!-- Company Mission -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-bullseye me-2"></i>Mission</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.profile.company.mission %}
+                    <p class="mb-0">{{ user.profile.company.mission|linebreaks }}</p>
+                    {% else %}
+                    <p class="text-muted mb-0">No mission statement provided.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Company Vision -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-eye me-2"></i>Vision</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.profile.company.vision %}
+                    <p class="mb-0">{{ user.profile.company.vision|linebreaks }}</p>
+                    {% else %}
+                    <p class="text-muted mb-0">No vision statement provided.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Company Address -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-map-marked-alt me-2"></i>Address</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.profile.company.address %}
+                    <p class="mb-0">{{ user.profile.company.address|linebreaks }}</p>
+                    {% else %}
+                    <p class="text-muted mb-0">No address provided.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Careers -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-briefcase me-2"></i>Careers</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.profile.company.careers %}
+                    <p class="mb-0">{{ user.profile.company.careers|linebreaks }}</p>
+                    {% else %}
+                    <p class="text-muted mb-0">No careers information provided.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Account Section -->
+<div class="card mt-4 border-danger">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-exclamation-triangle me-2"></i>Account Deletion
+        </h5>
+    </div>
+    <div class="card-body">
+        <p class="text-danger mb-3">
+            Warning: Deleting your account will permanently remove all your data, including your company profile, job
+            postings, and application history. This action cannot be undone.
+        </p>
+        <!-- Trigger Button for Modal -->
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteConfirmModal">
+            <i class="fas fa-trash-alt me-2"></i>Delete Account
+        </button>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmLabel">Worksy Notice</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete your account?<br>
+                <strong>This action cannot be undone.</strong>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'users:delete_account' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">OK</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %} 

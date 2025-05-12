@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+
+{% block title %}Post a Job | Worksy{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-briefcase me-2"></i>Post a New Job</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" id="post-job-form">
+                        {% csrf_token %}
+
+                        <!-- Job Details -->
+                        <h5 class="mb-3">Job Details</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_title" class="form-label">Job Title</label>
+                                {{ form.title }}
+                                {% if form.title.errors %}
+                                <div class="invalid-feedback d-block">{{ form.title.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_category" class="form-label">Category</label>
+                                {{ form.category }}
+                                {% if form.category.errors %}
+                                <div class="invalid-feedback d-block">{{ form.category.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_location" class="form-label">Location</label>
+                                {{ form.location }}
+                                {% if form.location.errors %}
+                                <div class="invalid-feedback d-block">{{ form.location.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Job Type & Experience -->
+                        <h5 class="mb-3">Job Type & Experience</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_job_type" class="form-label">Job Type</label>
+                                {{ form.job_type }}
+                                {% if form.job_type.errors %}
+                                <div class="invalid-feedback d-block">{{ form.job_type.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_experience_level" class="form-label">Experience Level</label>
+                                {{ form.experience_level }}
+                                {% if form.experience_level.errors %}
+                                <div class="invalid-feedback d-block">{{ form.experience_level.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_salary_min" class="form-label">Minimum Salary</label>
+                                {{ form.salary_min }}
+                                {% if form.salary_min.errors %}
+                                <div class="invalid-feedback d-block">{{ form.salary_min.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_salary_max" class="form-label">Maximum Salary</label>
+                                {{ form.salary_max }}
+                                {% if form.salary_max.errors %}
+                                <div class="invalid-feedback d-block">{{ form.salary_max.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Job Description -->
+                        <h5 class="mb-3">Job Description</h5>
+                        <div class="mb-4">
+                            <div class="mb-3">
+                                <label for="id_description" class="form-label">Description</label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                <div class="invalid-feedback d-block">{{ form.description.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_responsibilities" class="form-label">Responsibilities</label>
+                                {{ form.responsibilities }}
+                                {% if form.responsibilities.errors %}
+                                <div class="invalid-feedback d-block">{{ form.responsibilities.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_requirements" class="form-label">Requirements</label>
+                                {{ form.requirements }}
+                                {% if form.requirements.errors %}
+                                <div class="invalid-feedback d-block">{{ form.requirements.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Skills & Deadline -->
+                        <h5 class="mb-3">Skills & Deadline</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-12 mb-3">
+                                <label for="id_skills_required" class="form-label">Skills Required</label>
+                                {{ form.skills_required }}
+                                <div class="form-text">Enter skills separated by commas</div>
+                                {% if form.skills_required.errors %}
+                                <div class="invalid-feedback d-block">{{ form.skills_required.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_deadline" class="form-label">Application Deadline</label>
+                                {{ form.deadline }}
+                                {% if form.deadline.errors %}
+                                <div class="invalid-feedback d-block">{{ form.deadline.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-secondary" id="preview-job-btn">Preview</button>
+                            <button type="submit" class="btn btn-primary" id="submit-job-btn">Post Job</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tips Sidebar -->
+        <div class="col-md-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Tips for a Great Job Post</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i><strong>Be
+                                specific</strong> with the job title</li>
+                        <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i><strong>Outline
+                                responsibilities</strong> clearly</li>
+                        <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i><strong>Include
+                                salary range</strong></li>
+                        <li class="list-group-item"><i class="fas fa-check-circle text-success me-2"></i><strong>List
+                                specific skills</strong></li>
+                        <li class="list-group-item"><i
+                                class="fas fa-check-circle text-success me-2"></i><strong>Highlight benefits</strong>
+                        </li>
+                    </ul>
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle me-2"></i><strong>Did you know?</strong> Job posts with salary
+                        ranges get 30% more applications!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Job Preview Modal -->
+<div class="modal fade" id="jobPreviewModal" tabindex="-1" aria-labelledby="jobPreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Job Preview</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h3 id="preview-title">Job Title</h3>
+                <div class="mb-2">
+                    <span class="badge bg-primary" id="preview-job-type">Type</span>
+                    <span class="badge bg-secondary" id="preview-experience">Experience</span>
+                    <span class="badge bg-info" id="preview-location">Location</span>
+                </div>
+                <p><strong>Description:</strong> <span id="preview-description"></span></p>
+                <p><strong>Responsibilities:</strong> <span id="preview-responsibilities"></span></p>
+                <p><strong>Requirements:</strong> <span id="preview-requirements"></span></p>
+                <p><strong>Skills:</strong> <span id="preview-skills"></span></p>
+                <p><strong>Salary:</strong> <span id="preview-salary"></span></p>
+                <p><strong>Deadline:</strong> <span id="preview-deadline"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button class="btn btn-primary" id="submit-from-preview">Post Job</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Job Posted Successfully</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <i class="fas fa-check-circle text-success fa-4x mb-3"></i>
+                <h4>Your job has been posted!</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript to handle preview -->
+<script>
+    document.getElementById('preview-job-btn').addEventListener('click', function () {
+        document.getElementById('preview-title').textContent = document.getElementById('id_title').value || 'Job Title';
+        document.getElementById('preview-job-type').textContent = document.getElementById('id_job_type').value || 'Type';
+        document.getElementById('preview-experience').textContent = document.getElementById('id_experience_level').value || 'Experience';
+        document.getElementById('preview-location').textContent = document.getElementById('id_location').value || 'Location';
+        document.getElementById('preview-description').textContent = document.getElementById('id_description').value || 'No description';
+        document.getElementById('preview-responsibilities').textContent = document.getElementById('id_responsibilities').value || 'None';
+        document.getElementById('preview-requirements').textContent = document.getElementById('id_requirements').value || 'None';
+        document.getElementById('preview-skills').textContent = document.getElementById('id_skills_required').value || 'None';
+        const salaryMin = document.getElementById('id_salary_min').value || '0';
+        const salaryMax = document.getElementById('id_salary_max').value || '0';
+        document.getElementById('preview-salary').textContent = `$${salaryMin} - $${salaryMax}`;
+        document.getElementById('preview-deadline').textContent = document.getElementById('id_deadline').value || 'No deadline';
+        const previewModal = new bootstrap.Modal(document.getElementById('jobPreviewModal'));
+        previewModal.show();
+    });
+
+    document.getElementById('submit-from-preview').addEventListener('click', function () {
+        document.getElementById('post-job-form').submit();
+    });
+</script>
+{% endblock %}

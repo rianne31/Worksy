@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/oauth.css' %}">
+{% endblock %}
+
+{% block title %}Sign in with Social Account - Worksy{% endblock %}
+
+{% block content %}
+<div class="oauth-container">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <!-- Main Card -->
+                <div class="auth-card">
+                    <div class="card-body p-5">
+                        <!-- Logo and Title -->
+                        <div class="text-center mb-4">
+                            <img src="{% static 'img/logo.svg' %}" alt="Worksy" class="logo-img mb-4">
+                            <h2 class="auth-title">Welcome to Worksy</h2>
+                            <p class="auth-subtitle">Connect your account to get started</p>
+                        </div>
+
+                        {% if messages %}
+                        <div class="messages mb-4">
+                            {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Social Login Buttons -->
+                        <div class="social-login">
+                            <!-- Google Login -->
+                            <a href="{% url 'social:begin' 'google-oauth2' %}?next={{ request.GET.next|default:'/users/applicant/dashboard/' }}" 
+                               class="social-button google-button">
+                                <img src="{% static 'img/google.svg' %}" alt="Google" class="social-icon">
+                                <span>Continue with Google</span>
+                            </a>
+
+                            <!-- GitHub Login -->
+                            <a href="{% url 'social:begin' 'github' %}?next={{ request.GET.next|default:'/users/applicant/dashboard/' }}" 
+                               class="social-button github-button">
+                                <i class="fab fa-github social-icon"></i>
+                                <span>Continue with GitHub</span>
+                            </a>
+
+                            <!-- Divider -->
+                            <div class="divider">
+                                <span>or</span>
+                            </div>
+
+                            <!-- Traditional Login/Signup Links -->
+                            <div class="traditional-auth">
+                                <p class="text-center mb-3">Use traditional method</p>
+                                <div class="auth-buttons">
+                                    <a href="{% url 'users:applicant_login' %}" class="auth-button jobseeker-button">
+                                        <i class="fas fa-user"></i>
+                                        <span>Job Seeker</span>
+                                    </a>
+                                    <a href="{% url 'users:recruiter_login' %}" class="auth-button recruiter-button">
+                                        <i class="fas fa-building"></i>
+                                        <span>Recruiter</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Cards -->
+                <div class="info-cards">
+                    <!-- Features Card -->
+                    <div class="info-card features-card">
+                        <div class="card-content">
+                            <h5><i class="fas fa-star text-warning"></i>Features</h5>
+                            <ul>
+                                <li><i class="fas fa-check"></i>Smart Job Matching</li>
+                                <li><i class="fas fa-check"></i>AI-Powered Resume Analysis</li>
+                                <li><i class="fas fa-check"></i>Real-time Notifications</li>
+                                <li><i class="fas fa-check"></i>Interview Scheduling</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Benefits Card -->
+                    <div class="info-card benefits-card">
+                        <div class="card-content">
+                            <h5><i class="fas fa-gift text-primary"></i>Benefits</h5>
+                            <ul>
+                                <li><i class="fas fa-check"></i>Quick Setup</li>
+                                <li><i class="fas fa-check"></i>Profile Import</li>
+                                <li><i class="fas fa-check"></i>Secure Authentication</li>
+                                <li><i class="fas fa-check"></i>Easy Integration</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
